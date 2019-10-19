@@ -16,8 +16,9 @@ public class Menu {
 
     public void start(){
         while (true){
-            System.out.println("1) Запустить первое задание\n2) Запустить второе задание\n3) Запустить третье задани\n0)Выход");
-            int choice = new Scanner(System.in).nextInt();
+            System.out.println("1) Запустить первое задание\n2) Запустить второе задание\n3) Запустить третье задание\n0) Выход");
+            Scanner scan = new Scanner(System.in);
+            int choice = intInput(scan);
             switch (choice){
                 case (1):
                     exerciseOneSubmenu();
@@ -89,7 +90,7 @@ public class Menu {
                     }
                     break;
                 case (3):
-                    exerciseTwo.addTwoZerosToNumber();
+                    exerciseTwo.addTwoZerosToAllWorkers();
                     break;
                 case (4):
                     System.out.println(exerciseTwo.getText()+"\n");

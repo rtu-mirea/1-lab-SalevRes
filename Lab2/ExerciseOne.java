@@ -1,6 +1,4 @@
-import java.util.ArrayList;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.Arrays;
 
 public class ExerciseOne {
     private String text;
@@ -41,12 +39,22 @@ public class ExerciseOne {
         if (size<0){
             return;
         }
-        Pattern pattern = Pattern.compile("\\(\\d+\\)");
+        String pattern1 = "П)(";
+        String pattern2 = "С)(";
+        String string;
+        String convertedString = "";
         if (splittedByIndentText.length>1){
-            Matcher matcher = pattern.matcher(splittedByIndentText[1]);
-            splittedByIndentText[1] = matcher.replaceAll("("+size+")");
-        }
+            string = splittedByIndentText[1];
+            convertedString = string;
+            for (int i = 0; i<splittedByIndentText[1].length()-3;i++)
+                if (string.substring(i, i+3).equals(pattern1) | string.substring(i, i+3).equals(pattern2)){
+                    int indexOfBracket = i+3+string.substring(i+3).indexOf(")");
+                    convertedString = convertedString.substring(0, i+3)+size+string.substring(indexOfBracket);
+                    i = indexOfBracket;
 
+                }
+        }
+        splittedByIndentText[1] = convertedString;
         arrayToString();
     }
 
@@ -74,21 +82,18 @@ public class ExerciseOne {
 
     String getFontOfIntegers(){
         String listOfIntegers = "";
-        Pattern fontPattern = Pattern.compile("\\([ЖО]\\)\\([СП]\\)\\(\\d+\\)");
-        Matcher fontMatcher = fontPattern.matcher(text);
+        String[] patterns = {"(О)(С)(", "(О)(П)(","(Ж)(С)(","(Ж)(П)("};
+        int lastFontIndex = -1;
+        String font = "";
+        for (int i =0; i<text.length()-7;i++){
+            if (Arrays.asList(patterns).contains(text.substring(i, i+7))){
 
-        String lastFont = "";
-        int matchEnd = -1;
-        while (fontMatcher.find()){
-            if (matchEnd!=-1){
-                listOfIntegers += findIntegersInSubstring(text.substring(matchEnd, fontMatcher.start()), lastFont);
+                if (lastFontIndex!=-1){
+                    listOfIntegers+=findIntegersInSubstring(text.substring(lastFontIndex,i), font);
+                }
+                font = text.substring(i, i+8+text.substring(i+7).indexOf(")"));
+                lastFontIndex = i+7+text.substring(i+7).indexOf(")");
             }
-
-            matchEnd = fontMatcher.end();
-            lastFont = fontMatcher.group();
-        }
-        if (lastFont.equals("(О)(С)(12)")){
-            listOfIntegers += findIntegersInSubstring(text.substring(matchEnd), lastFont);
         }
         if (listOfIntegers.length()>3){
             return  listOfIntegers.substring(0, listOfIntegers.length()-2);}
@@ -97,22 +102,29 @@ public class ExerciseOne {
 
     private String findIntegersInSubstring(String text, String format){
         String integersList = "";
-        Pattern intPattern = Pattern.compile("\\d+");
-        Matcher intMatcher = intPattern.matcher(text);
+
         text = " "+text+" ";
-        while(intMatcher.find()){
-            if (isInteger(text.substring(intMatcher.start(), intMatcher.end()+2))){
-                integersList += format+" "+intMatcher.group()+"\n";
+        int firstIndex = -1;
+        for (int i = 0; i<text.length(); i++){
+
+            if (!Character.isDigit(text.charAt(i)) & firstIndex!=-1){
+
+                if (isInteger(text.substring(firstIndex-1, i+1))){
+                    integersList += format+" "+text.substring(firstIndex, i)+"\n";
+
+                }
+                firstIndex = -1;
             }
-
-
-
+            else if (Character.isDigit(text.charAt(i)) & firstIndex==-1){
+                firstIndex = i;
+            }
         }
         return integersList;
     }
 
     private boolean isInteger(String text) {
-        return (text.substring(0, 1).matches("[\\)\\s]") & text.substring(text.length()-1).matches("[\\(\\s.!?]"));
+        String[] pool = {"(", " ", ".", "!", "?"};
+        return (text.substring(0, 1).equals(")") | text.substring(0, 1).equals(" "))  & Arrays.asList(pool).contains(text.substring(text.length()-1));
     }
 
     String getText(){return text;}

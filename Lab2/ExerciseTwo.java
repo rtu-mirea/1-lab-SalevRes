@@ -1,31 +1,34 @@
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class ExerciseTwo {
     private StringBuffer text;
+    private int workersCount;
 
     public ExerciseTwo(String inputText){
         text = new StringBuffer(inputText);
+        workersCount = inputText.split("\n").length;
     }
+
 
     boolean insertWorker(String worker){
         if (isNotWorker(worker)){
             return false;
         }
-        Pattern intPattern = Pattern.compile("\\d+\\s[а-яА-Яa-zA-Z]");
-        Matcher intMatcher = intPattern.matcher(text);
-        Matcher numberOfWorker = intPattern.matcher(worker);
-        int number = 0;
-        if (numberOfWorker.find()){
-            number = parseToIntWithoutLastChar(numberOfWorker.group());
-        }
-        while (intMatcher.find() & number!=-1){
-            if (parseToIntWithoutLastChar(intMatcher.group())>number){
-                text.insert(intMatcher.start(), worker+"\n");
+        text.append("\n");
+        int lastIndex = 0;
+        for (int i =0;i<workersCount;i++){
+            String line = text.substring(lastIndex,text.indexOf("\n", lastIndex)-1);
+            if (getIdOfWorker(line)>getIdOfWorker(worker)){
+                text.insert(lastIndex, worker+"\n");
+                text.delete(text.length()-1, text.length());
                 return true;
             }
+            else{
+                lastIndex = text.indexOf("\n", lastIndex)+1;
+            }
         }
-        text.append("\n"+worker);
+
+        text.append(worker);
+        workersCount++;
         return true;
     }
 
@@ -33,41 +36,63 @@ public class ExerciseTwo {
         if (number<0){
             return false;
         }
-        Pattern intPattern = Pattern.compile("\\n"+number+"\\s");
-        Matcher intMatcher = intPattern.matcher(text);
-        if (intMatcher.find()){
-            int endOfLineIndex = intMatcher.end()+text.substring(intMatcher.end()).indexOf("\n");
-            text.delete(intMatcher.start(), endOfLineIndex);
-            return true;
-
+        int lastIndex = 0;
+        text.append("\n");
+        for (int i =0;i<workersCount;i++){
+            String line = text.substring(lastIndex,text.indexOf("\n", lastIndex)-1);
+            if (getIdOfWorker(line)==number){
+                text.delete(lastIndex,text.indexOf("\n", lastIndex)+1);
+                text.delete(text.length()-1, text.length());
+                return true;
+            }
+            else{
+                lastIndex = text.indexOf("\n", lastIndex)+1;
+            }
         }
+        text.delete(text.length()-1, text.length());
         return  false;
     }
 
-    void addTwoZerosToNumber(){
-        Pattern p = Pattern.compile("[^\\n]\\d+\\s+[а-яА-Яa-zA-Z]+");
-        Matcher m = p.matcher(text);
-        while (m.find()){
-            text.insert(m.start()+2, "00");
+    int getIdOfWorker(String str){
+        String returnInt = "";
+        for (int i=0;i<str.length();i++){
+            if (Character.isDigit(str.charAt(i))){
+                returnInt=str.substring(0,i+1);
+            }
+            else{
+                return Integer.parseInt(returnInt);
+            }
         }
+        return -1;
+    }
+
+
+    void addTwoZerosToAllWorkers(){
+        int lastIndex = 0;
+        text.append("\n");
+        for (int i =0;i<workersCount;i++) {
+            String line = text.substring(lastIndex, text.indexOf("\n", lastIndex) - 1);
+            text.insert(lastIndex+indexOfInsertion(line), "000");
+            lastIndex = text.indexOf("\n", lastIndex)+1;
+        }
+        text.delete(text.length()-1, text.length());
 
     }
 
+    int indexOfInsertion(String str){
+        for (int i=0;i<str.length();i++){
+            if (!Character.isDigit(str.charAt(i))){
+                return i;
+            }
+        }
+        return -1;
+    }
+
     boolean isNotWorker(String worker){
-        Pattern p = Pattern.compile("\\d+\\s[а-яА-Яa-zA-Z]+\\s\\d+");
-        Matcher m = p.matcher(worker);
-        return !m.matches();
+        return !(Character.isDigit(worker.charAt(0))&Character.isDigit(worker.charAt(1))&Character.isSpaceChar(worker.charAt(2)));
     }
 
     String getText(){return text.toString();}
 
-    int parseToIntWithoutLastChar(String text){
-        try{
-            return Integer.parseInt(text.substring(0,text.length()-2));
-        }
-        catch (Exception e){
-            return -1;
-        }
 
-    }
 }
